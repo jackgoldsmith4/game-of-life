@@ -9,10 +9,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 public class GameOfLifeView extends JPanel implements ActionListener {
+	
+	// default number of neighbors for birth and survival of cells
+	private final int DEFAULT_LOW_BIRTH_THRESHOLD = 3;
+	private final int DEFAULT_HIGH_BIRTH_THRESHOLD = 3;
+	private final int DEFAULT_LOW_SURVIVE_THRESHOLD = 2;
+	private final int DEFAULT_HIGH_SURVIVE_THRESHOLD = 3;
 	
 	private JSpotBoard board;
 	private int dimensions;
@@ -26,11 +34,12 @@ public class GameOfLifeView extends JPanel implements ActionListener {
 		setLayout(new BorderLayout());
 		add(board, BorderLayout.CENTER);
 		
+		/* settings panel: contains clear, randomize, and advance buttons */
+		JPanel settingsPanel = new JPanel();
+		
 		JButton clearButton = new JButton("Clear");	
 		JButton randomButton = new JButton("Randomize");
 		JButton advanceButton = new JButton("Advance Game");
-		
-		JPanel settingsPanel = new JPanel();
 
 		settingsPanel.add(clearButton);
 		settingsPanel.add(randomButton);
@@ -43,6 +52,42 @@ public class GameOfLifeView extends JPanel implements ActionListener {
 			b.addActionListener(this);
 		}
 		
+		/* threshold panel: contains fields for new birth and survival thresholds to be entered */
+		JPanel thresholdPanel = new JPanel();
+		
+		JLabel lowBirth = new JLabel("Low birth threshold:");
+		thresholdPanel.add(lowBirth);
+		JTextField lowBirthText = new JTextField("" + DEFAULT_LOW_BIRTH_THRESHOLD);
+		lowBirthText.setName("lb");
+		thresholdPanel.add(lowBirthText);
+		
+		JLabel highBirth = new JLabel("High birth threshold:");
+		thresholdPanel.add(highBirth);
+		JTextField highBirthText = new JTextField("" + DEFAULT_HIGH_BIRTH_THRESHOLD);
+		highBirthText.setName("hb");
+		thresholdPanel.add(highBirthText);
+		
+		JLabel lowSurvive = new JLabel("Low survive threshold:");
+		thresholdPanel.add(lowSurvive);
+		JTextField lowSurviveText = new JTextField("" + DEFAULT_LOW_SURVIVE_THRESHOLD);
+		lowSurviveText.setName("ls");
+		thresholdPanel.add(lowSurviveText);
+		
+		JLabel highSurvive = new JLabel("High survive threshold:");
+		thresholdPanel.add(highSurvive);
+		JTextField highSurviveText = new JTextField("" + DEFAULT_HIGH_SURVIVE_THRESHOLD);
+		highSurviveText.setName("hs");
+		thresholdPanel.add(highSurviveText);
+		
+		add(thresholdPanel, BorderLayout.NORTH);
+		
+		for(Component c: thresholdPanel.getComponents()) {
+			if (c.getClass() != lowBirth.getClass()) {
+				JTextField f = (JTextField) c;
+				f.addActionListener(this);
+			}
+		}
+		
 		listeners = new ArrayList<GameOfLifeViewListener>();
 	}
 	
@@ -51,18 +96,47 @@ public class GameOfLifeView extends JPanel implements ActionListener {
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		JButton button = (JButton) e.getSource();
-		String text = button.getText();
-						
-		if (text.contentEquals("Clear")){
-			fireEvent(new ClearEvent());
+		Object source = e.getSource();
+		
+		if (source.getClass().equals((new JButton()).getClass())) {
+			JButton button = (JButton) source;
+			String text = button.getText();
+							
+			if (text.contentEquals("Clear")){
+				fireEvent(new ClearEvent());
+				
+			} else if (text.contentEquals("Randomize")) {
+				fireEvent(new RandomizeEvent());
+				
+			} else { // text = Advance Game
+				fireEvent(new AdvanceGameEvent());
+			}	
+		} else { // must be a threshold JTextField
+			JTextField textField = (JTextField) source;
+			int threshold;
 			
-		} else if (text.contentEquals("Randomize")) {
-			fireEvent(new RandomizeEvent());
+			try {
+				threshold = Integer.parseInt(textField.getText());
+				
+				if (threshold < 1 || threshold > 8) {
+					throw new NumberFormatException();
+				}
+			} catch (NumberFormatException exception) {
+				JOptionPane.showMessageDialog(null, "Threshold must be a number between 1 and 8.", "Invalid input", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 			
-		} else { // text = Advance Game
-			fireEvent(new AdvanceGameEvent());
-		}	
+			// determine which threshold was edited
+			if (textField.getName().contentEquals("lb")) {
+				fireEvent(new ThresholdEvent(threshold, 0, 0, 0));
+			} else if (textField.getName().contentEquals("hb")) {
+				fireEvent(new ThresholdEvent(0, threshold, 0, 0));
+			} else if (textField.getName().contentEquals("ls")) {
+				fireEvent(new ThresholdEvent(0, 0, threshold, 0));
+			} else { // "hs"
+				fireEvent(new ThresholdEvent(0, 0, 0, threshold));
+			}
+		}
 	}
 	
 	public void addGameOfLifeViewListener(GameOfLifeViewListener l) {

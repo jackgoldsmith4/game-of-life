@@ -4,16 +4,27 @@ import java.util.Random;
 
 public class GameOfLifeModel {
 	
+	// default number of neighbors for birth and survival of cells
+	private final int DEFAULT_LOW_BIRTH_THRESHOLD = 3;
+	private final int DEFAULT_HIGH_BIRTH_THRESHOLD = 3;
+	private final int DEFAULT_LOW_SURVIVE_THRESHOLD = 2;
+	private final int DEFAULT_HIGH_SURVIVE_THRESHOLD = 3;
+	
 	// the percent of spots that will be filled (out of the entire grid)
 	private final double DEFAULT_PERCENT_RANDOM_FILLED = 0.75;
 	
-	private boolean[][] pointsArray;
 	private int dimensions;
+	private boolean[][] pointsArray;
+	
+	private int[] thresholds;
 	
 	public GameOfLifeModel(int dimensions) {
 		this.dimensions = dimensions;
-		
 		this.pointsArray = new boolean[this.dimensions][this.dimensions];
+		
+		int[] ts = { DEFAULT_LOW_BIRTH_THRESHOLD, DEFAULT_HIGH_BIRTH_THRESHOLD, 
+				DEFAULT_LOW_SURVIVE_THRESHOLD, DEFAULT_HIGH_SURVIVE_THRESHOLD };
+		this.thresholds = ts;
 	}
 	
 	public boolean[][] getState() {
@@ -46,11 +57,13 @@ public class GameOfLifeModel {
 				int numLiveNeighbors = getLiveNeighbors(i, j);
 				
 				if (pointsArray[i][j]) {
-					if (numLiveNeighbors > 1 && numLiveNeighbors < 4) {
+					if ((numLiveNeighbors >= thresholds[2]
+							&& numLiveNeighbors <= thresholds[3])) {
 						tempCoords[i][j] = true;
 					}
 				} else {
-					if (numLiveNeighbors == 3) {
+					if ((numLiveNeighbors >= thresholds[0]
+							&& numLiveNeighbors <= thresholds[1])) {
 						tempCoords[i][j] = true;
 					}
 				}
@@ -58,6 +71,26 @@ public class GameOfLifeModel {
 		}
 		
 		pointsArray = tempCoords;
+	}
+	
+	public void updateThresholds(int[] newThresholds) {
+		for (int i=0; i<newThresholds.length; i++) {
+			if (newThresholds[i] != 0) {
+				thresholds[i] = newThresholds[i];
+			}
+		}
+		
+		/* swap upper and lower bounds if lower is greater than upper */
+		if (thresholds[0] > thresholds[1]) {
+			int temp = thresholds[0];
+			thresholds[0] = thresholds[1];
+			thresholds[1] = temp;
+		}
+		if (thresholds[2] > thresholds[3]) {
+			int temp = thresholds[2];
+			thresholds[2] = thresholds[3];
+			thresholds[3] = temp;
+		}
 	}
 	
 	public void togglePoint(int x, int y) {

@@ -28,6 +28,12 @@ public class GameOfLifeController implements GameOfLifeViewListener, SpotListene
 		case 'a': // advance game event
 			model.advanceGame();
 			break;
+			
+		case 't': // threshold change
+			ThresholdEvent t = (ThresholdEvent) e;
+			int[] thresholds = { t.getLBThreshold(), t.getHBThreshold(), t.getLSThreshold(), t.getHSThreshold() };
+			model.updateThresholds(thresholds);
+			break;
 		}
 		
 		view.updateView(model.getState()); // pass the new state to the view
