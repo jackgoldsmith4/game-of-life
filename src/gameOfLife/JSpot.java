@@ -168,7 +168,7 @@ public class JSpot extends JPanel implements MouseListener, Spot {
 		Graphics2D g2d = (Graphics2D) g.create();
 		if (isHighlighted()) {
 			g2d.setColor(getHighlight());
-			g2d.setStroke(new BasicStroke(4));
+			g2d.setStroke(new BasicStroke(1));
 			g2d.drawRect(0, 0, getWidth(), getHeight());
 		}
 		if (!isEmpty()) {
