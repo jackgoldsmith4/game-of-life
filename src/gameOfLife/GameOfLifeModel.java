@@ -32,10 +32,16 @@ public class GameOfLifeModel {
 	}
 	
 	/* methods to update the state of the model:
+	 * -- set dimension of the board
 	 * -- clear the board
 	 * -- randomize the board
 	 * -- advance the game by one "generation"
 	 */
+	public void setDimension(int newDimension) {
+		this.dimensions = newDimension;
+		this.clear(); // new points array initialized with new dimension
+	}
+	
 	public void clear() {
 		pointsArray = new boolean[this.dimensions][this.dimensions];
 	}
@@ -75,7 +81,7 @@ public class GameOfLifeModel {
 	
 	public void updateThresholds(int[] newThresholds) {
 		for (int i=0; i<newThresholds.length; i++) {
-			if (newThresholds[i] != 0) {
+			if (newThresholds[i] != -1) {
 				thresholds[i] = newThresholds[i];
 			}
 		}

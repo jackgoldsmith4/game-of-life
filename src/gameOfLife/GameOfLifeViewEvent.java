@@ -1,7 +1,5 @@
 package gameOfLife;
 
-import javax.swing.JOptionPane;
-
 abstract public class GameOfLifeViewEvent {
 	
 	public boolean isDimensionEvent() {
@@ -25,6 +23,32 @@ abstract public class GameOfLifeViewEvent {
 	}
 	
 	public abstract char getEventType();
+}
+
+class DimensionEvent extends GameOfLifeViewEvent {
+	
+	private int dimensions;
+	
+	public DimensionEvent(int dimensions) {
+		if (dimensions < 10 || dimensions > 100) {
+			throw new IllegalArgumentException("Invalid board dimension");
+		}
+
+		this.dimensions = dimensions;
+	}
+	
+	public int getDimensions() {
+		return this.dimensions;
+	}
+	
+	@Override
+	public boolean isDimensionEvent() {
+		return true;
+	}
+	
+	public char getEventType() {
+		return 'd';
+	}
 }
 
 class ClearEvent extends GameOfLifeViewEvent {

@@ -37,10 +37,12 @@ public class GameOfLifeView extends JPanel implements ActionListener {
 		/* settings panel: contains clear, randomize, and advance buttons */
 		JPanel settingsPanel = new JPanel();
 		
+		JButton dimensionButton = new JButton("Change Dimension");
 		JButton clearButton = new JButton("Clear");	
 		JButton randomButton = new JButton("Randomize");
 		JButton advanceButton = new JButton("Advance Game");
 
+		settingsPanel.add(dimensionButton);
 		settingsPanel.add(clearButton);
 		settingsPanel.add(randomButton);
 		settingsPanel.add(advanceButton);
@@ -102,7 +104,25 @@ public class GameOfLifeView extends JPanel implements ActionListener {
 			JButton button = (JButton) source;
 			String text = button.getText();
 							
-			if (text.contentEquals("Clear")){
+			if (text.contentEquals("Change Dimension")){
+				int newDimensions;
+				while (true) {
+					try {
+						newDimensions = 
+								Integer.parseInt(JOptionPane.showInputDialog("Enter new dimension:"));
+
+						if (newDimensions < 10 || newDimensions > 100) {
+							throw new NumberFormatException();
+						}
+
+						break;
+					} catch (NumberFormatException exception) {
+						continue;
+					}
+				}
+				
+				fireEvent(new DimensionEvent(newDimensions));
+			} else if (text.contentEquals("Clear")){
 				fireEvent(new ClearEvent());
 				
 			} else if (text.contentEquals("Randomize")) {
@@ -118,23 +138,23 @@ public class GameOfLifeView extends JPanel implements ActionListener {
 			try {
 				threshold = Integer.parseInt(textField.getText());
 				
-				if (threshold < 1 || threshold > 8) {
+				if (threshold < 0 || threshold > 8) {
 					throw new NumberFormatException();
 				}
 			} catch (NumberFormatException exception) {
-				JOptionPane.showMessageDialog(null, "Threshold must be a number between 1 and 8.", "Invalid input", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Threshold must be a number between 0 and 8.", "Invalid input", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 			
 			// determine which threshold was edited
 			if (textField.getName().contentEquals("lb")) {
-				fireEvent(new ThresholdEvent(threshold, 0, 0, 0));
+				fireEvent(new ThresholdEvent(threshold, -1, -1, -1));
 			} else if (textField.getName().contentEquals("hb")) {
-				fireEvent(new ThresholdEvent(0, threshold, 0, 0));
+				fireEvent(new ThresholdEvent(-1, threshold, -1, -1));
 			} else if (textField.getName().contentEquals("ls")) {
-				fireEvent(new ThresholdEvent(0, 0, threshold, 0));
+				fireEvent(new ThresholdEvent(-1, -1, threshold, -1));
 			} else { // "hs"
-				fireEvent(new ThresholdEvent(0, 0, 0, threshold));
+				fireEvent(new ThresholdEvent(-1, -1, -1, threshold));
 			}
 		}
 	}
@@ -154,6 +174,18 @@ public class GameOfLifeView extends JPanel implements ActionListener {
 	}
 	
 	public void updateView(boolean[][] points) {
+		if (points.length != dimensions) {
+			// first, change dimensions variable to reflect new points array dimension
+			dimensions = points.length;
+			
+			// then create a new board and revalidate the component so it shows us
+			remove(board);
+			board = new JSpotBoard(points.length, points[0].length);
+			add(board, BorderLayout.CENTER);
+			
+			revalidate();
+		}
+		
 		for (int i=0; i<points.length; i++) {
 			for (int j=0; j<points[0].length; j++) {
 				if (points[i][j]) {

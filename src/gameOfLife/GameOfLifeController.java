@@ -17,6 +17,10 @@ public class GameOfLifeController implements GameOfLifeViewListener, SpotListene
 		
 		switch (e.getEventType()) {
 		
+		case 'd': // dimension event
+			DimensionEvent d = (DimensionEvent) e;
+			model.setDimension(d.getDimensions());
+		
 		case 'c': // clear event
 			model.clear();
 			break;
@@ -37,6 +41,11 @@ public class GameOfLifeController implements GameOfLifeViewListener, SpotListene
 		}
 		
 		view.updateView(model.getState()); // pass the new state to the view
+		
+		// need to add the controller as a spot listener if a new board was created
+		if (e.getEventType() == 'd') {
+			view.getBoard().addSpotListener(this);
+		}
 	}
 	
 	public void spotEntered(Spot spot) { }
