@@ -1,4 +1,4 @@
-package gameOfLife;
+package a8;
 
 import java.awt.BorderLayout;
 import java.awt.Component;

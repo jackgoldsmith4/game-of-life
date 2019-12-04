@@ -1,4 +1,4 @@
-package gameOfLife;
+package a8;
 
 abstract public class GameOfLifeViewEvent {
 	
